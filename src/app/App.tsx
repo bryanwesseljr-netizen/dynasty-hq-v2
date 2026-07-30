@@ -3,6 +3,7 @@ import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { AppShell } from '../components/layout/AppShell';
 import { AuthPage } from '../pages/AuthPage';
 import { DashboardPage } from '../pages/DashboardPage';
+import { DynastyWorkspacePage } from '../pages/DynastyWorkspacePage';
 import { ProfilePage } from '../pages/ProfilePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -15,6 +16,7 @@ export function App() {
         <Route element={<AppShell />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/dynasties/:dynastyId" element={<DynastyWorkspacePage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

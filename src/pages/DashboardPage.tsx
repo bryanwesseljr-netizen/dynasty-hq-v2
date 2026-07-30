@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   CalendarDays,
@@ -14,6 +15,7 @@ import type { CareerMode, Dynasty } from '../types/dynasty';
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [dynasties, setDynasties] = useState<Dynasty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -105,7 +107,16 @@ export function DashboardPage() {
             <article className="dynasty-card" key={dynasty.id}>
               <div className="dynasty-card-top">
                 <span className="mode-badge">{dynasty.mode}</span>
-                <button className="icon-button danger" aria-label={`Delete ${dynasty.name}`} onClick={() => user && void removeDynasty(user.uid, dynasty.id)}>
+                <button
+                  className="icon-button danger"
+                  aria-label={`Delete ${dynasty.name}`}
+                  onClick={() => {
+                    if (!user || !window.confirm(`Delete ${dynasty.name} and all of its game and recruiting data?`)) return;
+                    void removeDynasty(user.uid, dynasty.id).catch((nextError: unknown) => {
+                      setError(nextError instanceof Error ? nextError.message : 'Unable to delete the dynasty.');
+                    });
+                  }}
+                >
                   <Trash2 size={17} />
                 </button>
               </div>
@@ -118,7 +129,11 @@ export function DashboardPage() {
                 <strong>{dynasty.wins}–{dynasty.losses}</strong>
                 <span>Current record</span>
               </div>
-              <button className="card-action" onClick={() => user && void touchDynasty(user.uid, dynasty.id)}>
+              <button className="card-action" onClick={() => {
+                if (!user) return;
+                void touchDynasty(user.uid, dynasty.id);
+                navigate(`/dynasties/${dynasty.id}`);
+              }}>
                 Enter dynasty <ArrowRight size={17} />
               </button>
             </article>
