@@ -1,7 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ClipboardList, LayoutDashboard, School, Trophy } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  ArrowLeft,
+  BookOpen,
+  ClipboardList,
+  LayoutDashboard,
+  Mic2,
+  Newspaper,
+  School,
+  Settings2,
+  Trophy,
+  UserRound,
+} from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import { DynastySettingsPanel } from '../components/dynasty/DynastySettingsPanel';
 import { GameLogPanel } from '../components/dynasty/GameLogPanel';
+import { HomeDashboardPanel, type DashboardDestination } from '../components/dynasty/HomeDashboardPanel';
+import { ModulePreviewPanel } from '../components/dynasty/ModulePreviewPanel';
 import { OverviewPanel } from '../components/dynasty/OverviewPanel';
 import { RecruitingPanel } from '../components/dynasty/RecruitingPanel';
 import { SaveStatusBadge } from '../components/dynasty/SaveStatusBadge';
@@ -14,6 +28,7 @@ import {
   updateDynasty,
 } from '../services/dynasties';
 import {
+  defaultDynastyDashboard,
   defaultDynastyProfile,
   type Dynasty,
   type DynastyGame,
@@ -22,7 +37,7 @@ import {
   type SaveStatus,
 } from '../types/dynasty';
 
-type WorkspaceTab = 'overview' | 'games' | 'recruiting';
+type WorkspaceTab = 'home' | 'profile' | 'games' | 'recruiting' | 'newsroom' | 'legacy' | 'podcast' | 'settings';
 
 function normalizeDynasty(dynasty: Dynasty): Dynasty {
   return {
@@ -32,7 +47,17 @@ function normalizeDynasty(dynasty: Dynasty): Dynasty {
     wins: dynasty.wins || 0,
     losses: dynasty.losses || 0,
     profile: { ...defaultDynastyProfile, ...(dynasty.profile ?? {}) },
+    dashboard: { ...defaultDynastyDashboard, ...(dynasty.dashboard ?? {}) },
   };
+}
+
+function hexToRgb(hex: string) {
+  const normalized = hex.trim().replace('#', '');
+  const expanded = normalized.length === 3
+    ? normalized.split('').map((character) => character + character).join('')
+    : normalized;
+  if (!/^[0-9a-fA-F]{6}$/.test(expanded)) return '34, 197, 94';
+  return `${Number.parseInt(expanded.slice(0, 2), 16)}, ${Number.parseInt(expanded.slice(2, 4), 16)}, ${Number.parseInt(expanded.slice(4, 6), 16)}`;
 }
 
 export function DynastyWorkspacePage() {
@@ -42,7 +67,7 @@ export function DynastyWorkspacePage() {
   const [draft, setDraft] = useState<Dynasty | null>(null);
   const [games, setGames] = useState<DynastyGame[]>([]);
   const [recruiting, setRecruiting] = useState<RecruitSchool[]>([]);
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('overview');
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('home');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [error, setError] = useState('');
   const [dynastyLoading, setDynastyLoading] = useState(true);
@@ -59,6 +84,7 @@ export function DynastyWorkspacePage() {
     setDraft(null);
     setGames([]);
     setRecruiting([]);
+    setActiveTab('home');
     setDynastyLoading(true);
     setGamesLoaded(false);
     setSaveStatus('idle');
@@ -124,6 +150,7 @@ export function DynastyWorkspacePage() {
           season: Math.max(1, draft.season),
           week: Math.max(1, draft.week),
           profile: draft.profile,
+          dashboard: draft.dashboard,
         });
 
         if (revisionRef.current === revision) {
@@ -169,6 +196,11 @@ export function DynastyWorkspacePage() {
     setDraft((current) => current ? { ...current, ...patch } : current);
   }
 
+  function navigateFromDashboard(destination: DashboardDestination) {
+    setActiveTab(destination);
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  }
+
   if (dynastyLoading) return <FullPageLoader label="Loading dynasty workspace..." />;
 
   if (!dynasty || !draft || !user || !dynastyId) {
@@ -184,8 +216,15 @@ export function DynastyWorkspacePage() {
     );
   }
 
+  const dashboard = { ...defaultDynastyDashboard, ...(draft.dashboard ?? {}) };
+  const workspaceStyle = {
+    '--dynasty-accent': dashboard.accentColor,
+    '--dynasty-secondary': dashboard.secondaryColor,
+    '--dynasty-accent-rgb': hexToRgb(dashboard.accentColor),
+  } as CSSProperties;
+
   return (
-    <main className="page-content workspace-page">
+    <main className="page-content workspace-page" style={workspaceStyle}>
       <Link className="back-link" to="/dashboard"><ArrowLeft size={17} /> All dynasties</Link>
 
       <section className="workspace-hero">
@@ -204,13 +243,19 @@ export function DynastyWorkspacePage() {
 
       {error && <div className="auth-alert error workspace-error"><span>{error}</span><button onClick={() => setError('')}>Dismiss</button></div>}
 
-      <nav className="workspace-tabs" aria-label="Dynasty workspace sections">
-        <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}><LayoutDashboard size={18} /> Overview</button>
-        <button className={activeTab === 'games' ? 'active' : ''} onClick={() => setActiveTab('games')}><ClipboardList size={18} /> Game log <span>{games.length}</span></button>
+      <nav className="workspace-tabs immersive-tabs" aria-label="Dynasty workspace sections">
+        <button className={activeTab === 'home' ? 'active' : ''} onClick={() => setActiveTab('home')}><LayoutDashboard size={18} /> Home</button>
+        <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}><UserRound size={18} /> Career</button>
+        <button className={activeTab === 'games' ? 'active' : ''} onClick={() => setActiveTab('games')}><ClipboardList size={18} /> Games <span>{games.length}</span></button>
         <button className={activeTab === 'recruiting' ? 'active' : ''} onClick={() => setActiveTab('recruiting')}><School size={18} /> Recruiting <span>{recruiting.length}</span></button>
+        <button className={activeTab === 'newsroom' ? 'active' : ''} onClick={() => setActiveTab('newsroom')}><Newspaper size={18} /> Newsroom</button>
+        <button className={activeTab === 'legacy' ? 'active' : ''} onClick={() => setActiveTab('legacy')}><BookOpen size={18} /> Legacy</button>
+        <button className={activeTab === 'podcast' ? 'active' : ''} onClick={() => setActiveTab('podcast')}><Mic2 size={18} /> Podcast</button>
+        <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}><Settings2 size={18} /> Settings</button>
       </nav>
 
-      {activeTab === 'overview' && <OverviewPanel dynasty={{ ...draft, ...currentRecord }} games={games} recruiting={recruiting} onPatch={patchDynasty} />}
+      {activeTab === 'home' && <HomeDashboardPanel dynasty={{ ...draft, ...currentRecord }} games={games} recruiting={recruiting} onPatch={patchDynasty} onNavigate={navigateFromDashboard} />}
+      {activeTab === 'profile' && <OverviewPanel dynasty={{ ...draft, ...currentRecord }} games={games} recruiting={recruiting} onPatch={patchDynasty} />}
       {activeTab === 'games' && (
         <GameLogPanel
           userId={user.uid}
@@ -224,6 +269,10 @@ export function DynastyWorkspacePage() {
         />
       )}
       {activeTab === 'recruiting' && <RecruitingPanel userId={user.uid} dynastyId={dynastyId} recruiting={recruiting} onError={setError} />}
+      {activeTab === 'newsroom' && <ModulePreviewPanel module="newsroom" dynasty={{ ...draft, ...currentRecord }} games={games} recruiting={recruiting} />}
+      {activeTab === 'legacy' && <ModulePreviewPanel module="legacy" dynasty={{ ...draft, ...currentRecord }} games={games} recruiting={recruiting} />}
+      {activeTab === 'podcast' && <ModulePreviewPanel module="podcast" dynasty={{ ...draft, ...currentRecord }} games={games} recruiting={recruiting} />}
+      {activeTab === 'settings' && <DynastySettingsPanel dynasty={{ ...draft, ...currentRecord }} onPatch={patchDynasty} />}
     </main>
   );
 }

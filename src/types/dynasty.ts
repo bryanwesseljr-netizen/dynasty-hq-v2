@@ -20,6 +20,20 @@ export interface DynastyProfile {
   bio: string;
 }
 
+export interface DynastyDashboard {
+  accentColor: string;
+  secondaryColor: string;
+  upcomingOpponent: string;
+  upcomingLocation: HomeAway;
+  upcomingKickoff: string;
+  upcomingBroadcast: string;
+  weeklyFocus: string;
+  weeklyGoal: string;
+  seasonGoal: string;
+  latestHeadline: string;
+  headlineOutlet: string;
+}
+
 export interface Dynasty {
   id: string;
   ownerId: string;
@@ -31,6 +45,7 @@ export interface Dynasty {
   wins: number;
   losses: number;
   profile?: DynastyProfile;
+  dashboard?: DynastyDashboard;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
 }
@@ -67,7 +82,7 @@ export interface RecruitSchool {
 }
 
 export type CreateDynastyInput = Pick<Dynasty, 'name' | 'mode' | 'school'>;
-export type DynastyUpdate = Partial<Pick<Dynasty, 'name' | 'mode' | 'school' | 'season' | 'week' | 'wins' | 'losses' | 'profile'>>;
+export type DynastyUpdate = Partial<Pick<Dynasty, 'name' | 'mode' | 'school' | 'season' | 'week' | 'wins' | 'losses' | 'profile' | 'dashboard'>>;
 export type CreateGameInput = Omit<DynastyGame, 'id' | 'createdAt' | 'updatedAt'>;
 export type UpdateGameInput = Partial<CreateGameInput>;
 export type CreateRecruitInput = Omit<RecruitSchool, 'id' | 'createdAt' | 'updatedAt'>;
@@ -85,6 +100,20 @@ export const defaultDynastyProfile: DynastyProfile = {
   prestige: 'C+',
   contractYears: 3,
   bio: '',
+};
+
+export const defaultDynastyDashboard: DynastyDashboard = {
+  accentColor: '#22c55e',
+  secondaryColor: '#0f172a',
+  upcomingOpponent: '',
+  upcomingLocation: 'Home',
+  upcomingKickoff: 'Saturday · 3:30 PM',
+  upcomingBroadcast: 'ESPN+',
+  weeklyFocus: 'Execute the game plan and win the week.',
+  weeklyGoal: 'Build momentum without sacrificing long-term development.',
+  seasonGoal: 'Finish the season with a story worth remembering.',
+  latestHeadline: 'A new chapter begins inside Dynasty HQ.',
+  headlineOutlet: 'Dynasty HQ Newswire',
 };
 
 export function interestToTier(interest: number): RecruitingTier {

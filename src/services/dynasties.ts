@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import {
+  defaultDynastyDashboard,
   defaultDynastyProfile,
   type CreateDynastyInput,
   type CreateGameInput,
@@ -139,6 +140,15 @@ export async function createDynasty(userId: string, input: CreateDynastyInput) {
       ...defaultDynastyProfile,
       displayName: input.mode === 'RTG' ? input.name : '',
       almaMater: input.mode === 'RTG' ? '' : input.school,
+    },
+    dashboard: {
+      ...defaultDynastyDashboard,
+      weeklyFocus: input.mode === 'RTG'
+        ? 'Earn coach trust, protect your health, and make every snap count.'
+        : 'Install the weekly plan, develop the roster, and win the situational battles.',
+      seasonGoal: input.mode === 'RTG'
+        ? 'Turn this season into the next step of your recruiting and legacy journey.'
+        : 'Build a program identity that creates better opportunities on and off the field.',
     },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),

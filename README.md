@@ -84,3 +84,19 @@ The next build should give each dynasty its own nested data sections for:
 ## Important
 
 This starter does not yet render the 3,000-line v1 application inside each dynasty. The original source is preserved in `legacy/DynastyHQ-v1.jsx.txt`. The next migration sprint should move its data model and feature modules into the new per-dynasty structure without losing the current app.
+
+## Immersive dashboard milestone
+
+The project now also includes:
+
+- A dedicated Dynasty Home command center
+- Upcoming opponent, location, kickoff, and broadcast setup
+- Weekly focus, weekly standard, and season objective tracking
+- Recent-results and recruiting-pulse summaries
+- RTG-specific and coach-specific identity cards
+- Dynasty-specific primary and secondary colors
+- Navigation for Home, Career, Games, Recruiting, Newsroom, Legacy, Podcast, and Settings
+- Preview foundations for the Newsroom, Legacy Room, and Podcast Studio
+- Firestore autosave for dashboard and appearance settings
+
+Existing dynasty documents remain compatible. Missing dashboard fields are filled with safe defaults in the app and are written to Firestore the next time that dynasty is edited.

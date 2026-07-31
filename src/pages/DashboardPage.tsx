@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { createDynasty, removeDynasty, subscribeToDynasties, touchDynasty } from '../services/dynasties';
-import type { CareerMode, Dynasty } from '../types/dynasty';
+import { defaultDynastyDashboard, type CareerMode, type Dynasty } from '../types/dynasty';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -103,8 +103,14 @@ export function DashboardPage() {
         </section>
       ) : (
         <section className="dynasty-grid">
-          {dynasties.map((dynasty) => (
-            <article className="dynasty-card" key={dynasty.id}>
+          {dynasties.map((dynasty) => {
+            const dashboard = { ...defaultDynastyDashboard, ...(dynasty.dashboard ?? {}) };
+            return (
+            <article
+              className="dynasty-card themed-dynasty-card"
+              key={dynasty.id}
+              style={{ '--card-accent': dashboard.accentColor, '--card-secondary': dashboard.secondaryColor } as CSSProperties}
+            >
               <div className="dynasty-card-top">
                 <span className="mode-badge">{dynasty.mode}</span>
                 <button
@@ -137,7 +143,8 @@ export function DashboardPage() {
                 Enter dynasty <ArrowRight size={17} />
               </button>
             </article>
-          ))}
+            );
+          })}
         </section>
       )}
 
